@@ -56,7 +56,6 @@ vector<vector<string> > NTree::search(string val) {
   Node * node = root;
   
   string key = normalize(val);
-  //cout << " searching " << key << endl;
 
   while (key.size() > 0 && depth < MAX_DEPTH) {
     int index = key_index(key);
@@ -159,6 +158,7 @@ void query(NTree * data, char * query, char * result) {
       break;
   }
   jout += "]";
+  /* iso-8859-1 to utf8 */
   unsigned char *in = (unsigned char *) jout.c_str(), *out = (unsigned char *) result;
   while (*in)
     if (*in<128) *out++=*in++;
