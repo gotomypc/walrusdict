@@ -16,6 +16,7 @@ class Node {
 
 public: 
   int depth;
+  string key;
   Node(int d) : next(), depth(d) {}
   Node * next[27];
   vector<vector<string> > vals;
@@ -28,17 +29,45 @@ public:
   int add(string code, string val);
   int clear();
   vector<vector<string> > search(string val);
+  void full_sort();
 
 private:
   Node * root;
   int insert(Node * node, string key, vector<string> data);
   string normalize(string val);
   int key_index(string s);
+  void deep_sort(Node * node);
   
 };
 
 NTree::NTree() {
   root = new Node(0);
+  root->key = "/";
+}
+
+void NTree::full_sort() {
+  deep_sort(root);
+}
+
+bool charcmp(char a, char b) {
+  return tolower(a) < tolower(b);
+}
+ 
+bool sortstrcmp(vector<string> a, vector <string> b)
+{
+  return lexicographical_compare(a[1].begin(),a[1].end(),b[1].begin(),b[1].end(), charcmp);
+}
+
+void NTree::deep_sort(Node * node){
+  /* recursively traverse the tree to sort the vals */
+  // cerr << node->key << endl;
+  
+  sort(node->vals.begin(),node->vals.end(),sortstrcmp);
+  for (int i=0; i<27; i++) {
+    Node * tgt = node->next[i];
+    if (tgt != NULL)
+      deep_sort(tgt);
+  }
 }
 
 int NTree::key_index(string key) {
@@ -77,8 +106,10 @@ int NTree::insert(Node * node, string key, vector<string> data) {
 
   string sub = key.substr(1);
   if (node->depth < MAX_DEPTH and sub.size() > 0) {
-    if (node->next[index] == NULL)
-      node->next[index] = new Node(node->depth + 1);        
+    if (node->next[index] == NULL) {
+      node->next[index] = new Node(node->depth + 1);
+      node->next[index]->key = node->key + sub[0];
+    }
     /* recursion */    
     return insert(node->next[index], sub, data);
   }
@@ -178,5 +209,8 @@ void load(NTree * data, char * code, char * file) {
     while (getline(input, line)) {
       data->add(code, line);
     }
-    input.close();  
+    input.close();
+    cerr << "sorting..." << endl;
+    data->full_sort();
+    cerr << "done!" << endl;
 }

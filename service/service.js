@@ -20,10 +20,12 @@ var resPtr = ref.allocCString((new Buffer(8192).toString()));
 /* with those 6 dicts and depth == 8 expect 1GB ram usage*/
 libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-EN","dicts/IT-EN-8859.txt")
 libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-IT","dicts/EN-IT-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-DE","dicts/EN-DE-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-EN","dicts/DE-EN-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt")
+/*
+  libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-IT","dicts/EN-IT-8859.txt")
+  libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-DE","dicts/EN-DE-8859.txt")
+  libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-EN","dicts/DE-EN-8859.txt")
+  libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt")
+*/
 
 query = function(req, res) {
     res.writeHead(200, { 'Content-Type': 'text/json'});

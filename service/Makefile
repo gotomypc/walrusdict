@@ -1,2 +1,2 @@
 ntree: ntree.cpp
-	gcc -shared -fpic $^ -o libntree.so
+	gcc -shared -fpic $^ -g -o libntree.so
