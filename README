@@ -1,0 +1,18 @@
+WalrusDict
+==========
+
+WalrusDict is dictionary lookup and flashcard creation solution useful for language learners. It is composed of an Android app and a web service.
+
+Service components:
+ * service.js:
+	http api interface
+ * ntree.cpp:
+	cpp library implementing a n-way tree to access the dictionaries
+	it is accessed through nodejs ffi bindings
+ * rogueclient.py:
+	interface to libanki to create cards and sync
+
+Currently it is hard (but not impossible) to setup because the dictionaries are not freely redistributable and it requires you to setup your anki account separately.
+
+Copyright (c) 2012 Riccardo Cecolin
+@rikiji - http://rikiji.it
