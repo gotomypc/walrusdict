@@ -50,7 +50,7 @@ class RogueAnki:
         model['did'] = did = self.collection.decks.id(deck_name)
         self.collection.models.save()
         
-        note = self.collection.newNote()
+        note = self.collection.newNote()        
         note['Front']= unicode(front or "", sys.getfilesystemencoding())
         note['Back']= unicode(back or "", sys.getfilesystemencoding())
         note.model()['did']= did

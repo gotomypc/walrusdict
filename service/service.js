@@ -20,15 +20,17 @@ var resPtr = ref.allocCString((new Buffer(8192).toString()));
 
 /* with those 6 dicts and depth == 8 expect 1GB ram usage*/
 libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-EN","dicts/IT-EN-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt")
 /*
+  libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt")
   libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-IT","dicts/EN-IT-8859.txt")
   libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-DE","dicts/EN-DE-8859.txt")
   libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-EN","dicts/DE-EN-8859.txt")
   libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt")
 */
 
-console.log("all dicts loaded. starting service.")
+var sanitize = function(s) {
+    return String(s).replace(/(["!'$`\\])/g,'');
+};
 
 query = function(req, res) {
     /* search into the loaded dictionaries */
@@ -48,12 +50,19 @@ ankipush = function(req, res) {
     /* push a card to the configured anki deck */
     res.writeHead(200, { 'Content-Type': 'text/json'});
     
+
     var front = req.params.query.front;
     var back = req.params.query.back;
     var deck = req.params.query.deck || "walrus";
-    console.log("anki: " + front + " " + back)
+
+    if (front === undefined || back === undefined) {	
+	res.end('["error"]');
+	return;
+    }
+
+    console.log("anki: " + sanitize(front) + " - " + sanitize(back));
     /* execute anki script */
-    child = exec('python anki/rogueclient.py -D "' + deck + '" -F "' + front + '" -B "' + back + '"', function (error, stdout, stderr) {
+    child = exec('python anki/rogueclient.py -D "' + sanitize(deck) + '" -F "' + sanitize(front) + '" -B "' + sanitize(back) + '"', function (error, stdout, stderr) {
 	if (error !== null) {
 	    console.log('exec error: ' + error);
 	    console.log('stdout: ' + stdout);
@@ -96,10 +105,14 @@ var actions = {
     '/sync': ankisync
 }
 
+var port = process.argv[2] || "3000";
+console.log("all dicts loaded. starting service on port " + port + ".");
+
+
 http.createServer(function(req,res) {
     req.params = url.parse(req.url, true);
     console.log(req.url);
     console.log(req.params);
     selected = actions[req.params.pathname] || fail;
     selected(req,res);
-}).listen(3000);
+}).listen(port);

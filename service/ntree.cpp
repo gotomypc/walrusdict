@@ -254,7 +254,7 @@ void query(NTree * data, char * query, char * result) {
   cout << query;
   vector<vector<string> > results = data->search(query);
   string jout = "[";
-  /* break after 20 results */
+  /* break after 20 results. TODO: optimize tree memory usage accordingly */
   int limit = 20;
   for(vector<vector<string> >::iterator it = results.begin(); it != results.end(); it++) {
     if(it != results.begin()) jout += ","; 

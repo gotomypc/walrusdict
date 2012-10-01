@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -66,27 +67,30 @@ public class MainActivity extends Activity {
 		this.adapter = new CustomListAdapter(this, R.layout.list_item, data);
 		list.setAdapter(this.adapter);
 
-		list.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view,
+		list.setOnItemLongClickListener(new OnItemLongClickListener() {
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				String[] e = MainActivity.this.data.get(position);
 				String[] card = generate_card(e);
-				new AnkiCommand().execute("push", card[0], card[1]);
+				new AnkiCommand().execute("push", "y", card[0], card[1]);
+				new AnkiCommand().execute("push", "n", card[1], card[0]);
 				Toast.makeText(getApplicationContext(), "Sending to anki...",
 						Toast.LENGTH_SHORT).show();
+				return true;
 			}
 		});
 	}
 
 	private String[] generate_card(String[] entry) {
-		String [] card = new String[2];
+		String[] card = new String[2];
 		/* front */
 		card[0] = entry[1] + "<br>" + entry[0];
-		String rev = entry[0].charAt(3)+ "" + entry[0].charAt(4) + "-" + entry[0].charAt(0) + ""+ entry[0].charAt(1);
-		card[1] = entry[1] + "<br>" + rev;
+		String rev = entry[0].charAt(3) + "" + entry[0].charAt(4) + "-"
+				+ entry[0].charAt(0) + "" + entry[0].charAt(1);
+		card[1] = entry[2] + "<br>" + rev;
 		return card;
 	}
-	
+
 	private String format(String[] input, String delimiter) {
 		StringBuilder sb = new StringBuilder();
 		for (String value : input) {
@@ -115,7 +119,7 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_sync:
-			new AnkiCommand().execute("sync");
+			new AnkiCommand().execute("sync","y");
 			return true;
 		case R.id.menu_author:
 			Intent brt = new Intent(Intent.ACTION_VIEW,
@@ -126,7 +130,7 @@ public class MainActivity extends Activity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
 	public static String root_url() {
 		return PROT + "://" + HOST + ":" + PORT + "/";
 	}
@@ -181,6 +185,7 @@ public class MainActivity extends Activity {
 	private class AnkiCommand extends AsyncTask {
 
 		private final String url = root_url();
+		private boolean popup = false;
 
 		protected void onPostExecute(Object result) {
 
@@ -188,8 +193,9 @@ public class MainActivity extends Activity {
 				Gson gson = new Gson();
 				Log.d("debug", "fetched:  " + result);
 				String[] res = gson.fromJson((String) result, String[].class);
-				Toast.makeText(getApplicationContext(), res[0],
-						Toast.LENGTH_LONG).show();
+				if (this.popup)
+					Toast.makeText(getApplicationContext(), res[0],
+							Toast.LENGTH_LONG).show();
 			} else {
 				Toast.makeText(getApplicationContext(), "error",
 						Toast.LENGTH_LONG).show();
@@ -200,19 +206,21 @@ public class MainActivity extends Activity {
 
 			String result = "[]";
 			URL apiUrl;
+			if (params.length > 1 && params[1].equals("y"))
+				this.popup = true;
 
 			try {
 				if (params[0].equals("push")) {
 					/* pushing a new card to anki */
 					apiUrl = new URL(this.url + "push?front="
-							+ URLEncoder.encode((String) params[1], "utf-8")
+							+ URLEncoder.encode((String) params[2], "utf-8")
 							+ "&back="
-							+ URLEncoder.encode((String) params[2], "utf-8"));
+							+ URLEncoder.encode((String) params[3], "utf-8"));
 				} else {
 					/* sync deck */
 					apiUrl = new URL(this.url + "sync");
 				}
-				
+
 				HttpURLConnection conn = (HttpURLConnection) apiUrl
 						.openConnection();
 				conn.setConnectTimeout(30000);
