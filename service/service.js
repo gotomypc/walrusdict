@@ -3,6 +3,7 @@ var ref = require('ref');
 var ffi = require('ffi');
 var Iconv= require('iconv').Iconv;
 var iconv = new Iconv('ISO-8859-1','UTF-8');
+var exec = require('child_process').exec;
 
 var data = ref.types.void;
 var dataPtr = ref.refType(data);
@@ -43,17 +44,45 @@ query = function(req, res) {
     res.end(ref.readCString(resPtr,0));
 }
 
-anki = function(req, res) {
+ankipush = function(req, res) {
     /* push a card to the configured anki deck */
     res.writeHead(200, { 'Content-Type': 'text/json'});
-
+    
     var front = req.params.query.front;
     var back = req.params.query.back;
+    var deck = req.params.query.deck || "walrus";
     console.log("anki: " + front + " " + back)
     /* execute anki script */
-    res.end('["ok"]');
+    child = exec('python anki/rogueclient.py -D "' + deck + '" -F "' + front + '" -B "' + back + '"', function (error, stdout, stderr) {
+	if (error !== null) {
+	    console.log('exec error: ' + error);
+	    console.log('stdout: ' + stdout);
+	    console.log('stderr: ' + stderr);
+	    res.end('["error"]');
+	} else {
+	    res.end('["card added"]');
+	}
+    });
 }
 
+ankisync = function(req, res) {
+    /* sync anki decks */
+    res.writeHead(200, { 'Content-Type': 'text/json'});
+    
+    console.log("syncing");
+    /* execute anki script */
+    child = exec('python anki/rogueclient.py -s',
+		 function (error, stdout, stderr) {
+		     if (error !== null) {
+			 console.log('exec error: ' + error);
+			 console.log('stdout: ' + stdout);
+			 console.log('stderr: ' + stderr);
+			 res.end('["sync error"]');
+		     } else {			 
+			 res.end('["synced"]');
+		     }
+		 });    
+}
 
 fail = function(req ,res) {
     console.log('in query');
@@ -63,7 +92,8 @@ fail = function(req ,res) {
 
 var actions = {
     '/query': query,
-    '/anki': anki
+    '/push': ankipush,
+    '/sync': ankisync
 }
 
 http.createServer(function(req,res) {

@@ -11,13 +11,16 @@ import java.util.List;
 
 import com.google.gson.Gson;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -40,6 +43,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		new AnkiCommand().execute("sync");
 		this.input = (EditText) findViewById(R.id.input);
 		input.addTextChangedListener(new TextWatcher() {
 			public void afterTextChanged(Editable s) {
@@ -66,13 +70,23 @@ public class MainActivity extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				String[] e = MainActivity.this.data.get(position);
-				new PushCard().execute(e[1] + "<br>" + e[0], e[2]);
+				String[] card = generate_card(e);
+				new AnkiCommand().execute("push", card[0], card[1]);
 				Toast.makeText(getApplicationContext(), "Sending to anki...",
 						Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
 
+	private String[] generate_card(String[] entry) {
+		String [] card = new String[2];
+		/* front */
+		card[0] = entry[1] + "<br>" + entry[0];
+		String rev = entry[0].charAt(3)+ "" + entry[0].charAt(4) + "-" + entry[0].charAt(0) + ""+ entry[0].charAt(1);
+		card[1] = entry[1] + "<br>" + rev;
+		return card;
+	}
+	
 	private String format(String[] input, String delimiter) {
 		StringBuilder sb = new StringBuilder();
 		for (String value : input) {
@@ -98,6 +112,21 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_sync:
+			new AnkiCommand().execute("sync");
+			return true;
+		case R.id.menu_author:
+			Intent brt = new Intent(Intent.ACTION_VIEW,
+					Uri.parse("https://twitter.com/rikiji"));
+			startActivity(brt);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+	
 	public static String root_url() {
 		return PROT + "://" + HOST + ":" + PORT + "/";
 	}
@@ -149,9 +178,9 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private class PushCard extends AsyncTask {
+	private class AnkiCommand extends AsyncTask {
 
-		private final String url = root_url() + "anki?";
+		private final String url = root_url();
 
 		protected void onPostExecute(Object result) {
 
@@ -170,16 +199,25 @@ public class MainActivity extends Activity {
 		protected Object doInBackground(Object... params) {
 
 			String result = "[]";
+			URL apiUrl;
+
 			try {
-				URL apiUrl = new URL(this.url + "front="
-						+ URLEncoder.encode((String) params[0], "utf-8")
-						+ "&back="
-						+ URLEncoder.encode((String) params[1], "utf-8"));
+				if (params[0].equals("push")) {
+					/* pushing a new card to anki */
+					apiUrl = new URL(this.url + "push?front="
+							+ URLEncoder.encode((String) params[1], "utf-8")
+							+ "&back="
+							+ URLEncoder.encode((String) params[2], "utf-8"));
+				} else {
+					/* sync deck */
+					apiUrl = new URL(this.url + "sync");
+				}
+				
 				HttpURLConnection conn = (HttpURLConnection) apiUrl
 						.openConnection();
 				conn.setConnectTimeout(30000);
 				conn.setReadTimeout(30000);
-				conn.setRequestMethod("GET");
+				conn.setRequestMethod("POST");
 				conn.connect();
 				InputStream is = conn.getInputStream();
 				BufferedReader rd = new BufferedReader(
@@ -197,5 +235,4 @@ public class MainActivity extends Activity {
 			return result;
 		}
 	}
-
 }
