@@ -37,37 +37,41 @@ public class MainActivity extends Activity {
 	protected String[][] dataOrig;
 
 	@Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        this.
-        input = (EditText)findViewById(R.id.input);
-        input.addTextChangedListener(new TextWatcher(){
-            public void afterTextChanged(Editable s) {
-        		new DownloadData().execute(input.getText().toString());
-            	Log.d("onTextChanged",input.getText().toString());
-            }
-            public void beforeTextChanged(CharSequence s, int start, int count, int after){}
-            public void onTextChanged(CharSequence s, int start, int before, int count){}
-        });
-        
-        ListView list = (ListView) findViewById(R.id.list);
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		this.input = (EditText) findViewById(R.id.input);
+		input.addTextChangedListener(new TextWatcher() {
+			public void afterTextChanged(Editable s) {
+				new DownloadData().execute(input.getText().toString());
+				Log.d("onTextChanged", input.getText().toString());
+			}
 
-        this.data = new ArrayList<String[]>();
-    	this.adapter = new CustomListAdapter(this, R.layout.list_item, data);
-    	list.setAdapter(this.adapter); 
-        
-        list.setOnItemClickListener(new OnItemClickListener() {
-        	  public void onItemClick(AdapterView<?> parent, View view,
-        	    int position, long id) {
-        		String [] e = MainActivity.this.data.get(position); 
-        		new PushCard().execute(e[1] + "<br>" + e[0], e[2]);
-        	    Toast.makeText(getApplicationContext(),
-        	      "Sending to anki...", Toast.LENGTH_SHORT)
-        	      .show();
-        	  }
-        	});     
-    }
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
+
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+			}
+		});
+
+		ListView list = (ListView) findViewById(R.id.list);
+
+		this.data = new ArrayList<String[]>();
+		this.adapter = new CustomListAdapter(this, R.layout.list_item, data);
+		list.setAdapter(this.adapter);
+
+		list.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				String[] e = MainActivity.this.data.get(position);
+				new PushCard().execute(e[1] + "<br>" + e[0], e[2]);
+				Toast.makeText(getApplicationContext(), "Sending to anki...",
+						Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
 
 	private String format(String[] input, String delimiter) {
 		StringBuilder sb = new StringBuilder();
@@ -151,13 +155,16 @@ public class MainActivity extends Activity {
 
 		protected void onPostExecute(Object result) {
 
-			Gson gson = new Gson();
-			Log.d("debug", "fetched:  " + result);
-			String[] res = gson.fromJson((String) result,
-					String[].class);
-		    Toast.makeText(getApplicationContext(),
-	        	      res[0], Toast.LENGTH_LONG)
-	        	      .show();
+			if (result != null) {
+				Gson gson = new Gson();
+				Log.d("debug", "fetched:  " + result);
+				String[] res = gson.fromJson((String) result, String[].class);
+				Toast.makeText(getApplicationContext(), res[0],
+						Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getApplicationContext(), "error",
+						Toast.LENGTH_LONG).show();
+			}
 		}
 
 		protected Object doInBackground(Object... params) {
