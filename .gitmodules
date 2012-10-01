@@ -4,3 +4,6 @@
 [submodule "service/anki/aqt"]
 	path = service/anki/aqt
 	url = https://github.com/dae/ankiqt
+[submodule "service/anki/ankiqt"]
+	path = service/anki/ankiqt
+	url = https://github.com/dae/ankiqt
