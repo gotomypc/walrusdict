@@ -35,6 +35,8 @@ private:
   Node * root;
   int insert(Node * node, string key, vector<string> data);
   string normalize(string val);
+  string artikel(string val);
+  string articolo(string val);
   int key_index(string s);
   void deep_sort(Node * node);
   
@@ -42,7 +44,7 @@ private:
 
 NTree::NTree() {
   root = new Node(0);
-  root->key = "/";
+  root->key = "";
 }
 
 void NTree::full_sort() {
@@ -122,17 +124,94 @@ int NTree::add(string code, string val) {
   vector<string> entry;
   entry.push_back(code);
 
-
   stringstream ss(val);
+ 
   while(std::getline(ss, item, '\t')) {
     entry.push_back(item);
   }
+
+  if(entry.size() < 3) {
+    cerr << "skipping: " << val << endl;
+    return 0;
+  }
+
+  /* DE fix */
+  if(strncmp(entry[0].c_str(),"DE",2)==0) {
+    entry[1] = artikel(entry[1]);
+  } else if (strncmp(entry[0].c_str()+ 3,"DE",2)==0) {
+    entry[2] = artikel(entry[2]);
+  }
+
+  /* IT fix */  
+  if(strncmp(entry[0].c_str(),"IT",2)==0) {
+    entry[1] = articolo(entry[1]);
+  } else if (strncmp(entry[0].c_str()+ 3,"IT",2)==0) {
+    entry[2] = articolo(entry[2]);
+  }
+
+
+  cerr << "adding: " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
 
   norm = normalize(entry[1]);
   
   insert(root, norm, entry);
   
-  return 0;
+  return 1;
+}
+
+string NTree::articolo(string val) {
+  int erase_start = -1, erase_end = -1;
+  for(int i=0;i<val.size();i++) {
+    if(val[i] == '{')
+      erase_start=i;
+    
+    if(val[i] == '}')
+      erase_end=i;
+  }  
+
+  if (erase_start >= 0 && erase_end >= 0) {
+    val.erase(erase_start, 2 + erase_end-erase_start); 
+  }
+  return val;
+}
+
+string NTree::artikel(string val) {
+  int erase_start = -1, erase_end = -1, del = 0;
+  char gen = 0;
+
+  for(int i=0;i<val.size();i++) {
+    if (erase_start >= 0 && gen == 0 )
+      gen=val[i];
+
+    if(val[i] == '{')
+      erase_start=i;
+    
+    if(val[i] == '}')
+      erase_end=i;
+  }
+  
+  switch(gen) {
+  case 'm':
+    val = "der " + val;
+    del = 4;
+    break;
+  case 'f':
+    val = "die " + val;
+    del = 4;
+    break;
+  case 'n':
+    val = "das " + val;
+    del = 4;
+    break;
+  default:
+    del = 0;
+  }
+  
+  if (del > 0 && erase_start >= 0 && erase_end >= 0) {
+    val.erase(4 + erase_start, 4 + 2 + erase_end-erase_start); 
+  }
+
+  return val;
 }
 
 string NTree::normalize(string val) {
@@ -207,7 +286,9 @@ void load(NTree * data, char * code, char * file) {
     cerr << "loading: " << file << endl;
     string line;
     while (getline(input, line)) {
-      data->add(code, line);
+      if (line[0] != '#') {
+	data->add(code, line);
+      }
     }
     input.close();
     cerr << "sorting..." << endl;

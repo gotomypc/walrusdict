@@ -27,7 +27,10 @@ libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt")
   libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt")
 */
 
+console.log("all dicts loaded. starting service.")
+
 query = function(req, res) {
+    /* search into the loaded dictionaries */
     res.writeHead(200, { 'Content-Type': 'text/json'});
 
     var val = req.params.query.val;
@@ -40,6 +43,18 @@ query = function(req, res) {
     res.end(ref.readCString(resPtr,0));
 }
 
+anki = function(req, res) {
+    /* push a card to the configured anki deck */
+    res.writeHead(200, { 'Content-Type': 'text/json'});
+
+    var front = req.params.query.front;
+    var back = req.params.query.back;
+    console.log("anki: " + front + " " + back)
+    /* execute anki script */
+    res.end('["ok"]');
+}
+
+
 fail = function(req ,res) {
     console.log('in query');
     res.writeHead(404, { 'Content-Type': 'text/json'});
@@ -47,7 +62,8 @@ fail = function(req ,res) {
 }
 
 var actions = {
-    '/query': query    
+    '/query': query,
+    '/anki': anki
 }
 
 http.createServer(function(req,res) {
