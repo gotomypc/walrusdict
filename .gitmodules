@@ -1,0 +1,6 @@
+[submodule "service/anki/libanki"]
+	path = service/anki/libanki
+	url = https://github.com/dae/libanki
+[submodule "service/anki/aqt"]
+	path = service/anki/aqt
+	url = https://github.com/dae/ankiqt
