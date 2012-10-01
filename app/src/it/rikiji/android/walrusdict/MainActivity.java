@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
         		String [] e = MainActivity.this.data.get(position); 
         		new PushCard().execute(e[1] + "<br>" + e[0], e[2]);
         	    Toast.makeText(getApplicationContext(),
-        	      "Sent to anki", Toast.LENGTH_SHORT)
+        	      "Sending to anki...", Toast.LENGTH_SHORT)
         	      .show();
         	  }
         	});     
@@ -153,14 +153,11 @@ public class MainActivity extends Activity {
 
 			Gson gson = new Gson();
 			Log.d("debug", "fetched:  " + result);
-			MainActivity.this.dataOrig = gson.fromJson((String) result,
-					String[][].class);
-			MainActivity.this.data.clear();
-			int i = 0;
-			for (String[] x : MainActivity.this.dataOrig) {
-				MainActivity.this.data.add(x);
-			}
-			MainActivity.this.adapter.notifyDataSetChanged();
+			String[] res = gson.fromJson((String) result,
+					String[].class);
+		    Toast.makeText(getApplicationContext(),
+	        	      res[0], Toast.LENGTH_LONG)
+	        	      .show();
 		}
 
 		protected Object doInBackground(Object... params) {
