@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
 		input.addTextChangedListener(new TextWatcher() {
 			public void afterTextChanged(Editable ed) {
 				String s = input.getText().toString();
-				if(s.length() > 2)
+				if (s.length() > 2)
 					new DownloadData().execute(s);
 				Log.d("onTextChanged", input.getText().toString());
 			}
@@ -121,7 +121,7 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_sync:
-			new AnkiCommand().execute("sync","y");
+			new AnkiCommand().execute("sync", "y");
 			return true;
 		case R.id.menu_author:
 			Intent brt = new Intent(Intent.ACTION_VIEW,
@@ -160,7 +160,7 @@ public class MainActivity extends Activity {
 			String val = params[0].toString();
 			String result = "[]";
 			try {
-				URL apiUrl = new URL(this.url + val);
+				URL apiUrl = new URL(this.url + URLEncoder.encode(val, "utf-8"));
 				HttpURLConnection conn = (HttpURLConnection) apiUrl
 						.openConnection();
 				conn.setConnectTimeout(30000);

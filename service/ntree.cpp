@@ -46,8 +46,8 @@ string normalize(string val) {
 
   transform(val.begin(), val.end(), val.begin(), ::tolower);
 
-  if (!strcmp("to ",val.c_str()))
-    val.erase(0, 3); 
+  if (!strncmp("to ",val.c_str(),3))
+    val.erase(0, 3);
 
   return val;
 }
@@ -69,9 +69,20 @@ bool sortstrcmp(vector<string> a, vector <string> b)
 void NTree::deep_sort(Node * node){
   /* recursively traverse the tree to sort the vals */
   // cerr << node->key << endl;
-  
+
+  /* fix before sorting */
+  for(vector<vector<string> >::iterator it = node->vals.begin(); it != node->vals.end(); it++) {
+    /* EN fix */
+    if(strncmp((*it)[0].c_str(),"EN",2)==0 && !strncmp("to ",(*it)[1].c_str(),3)) {
+      (*it)[1].erase(0,3);
+    } else if (strncmp((*it)[0].c_str()+ 3,"EN",2)==0 && !strncmp("to ",(*it)[1].c_str(),3)) {
+      (*it)[2].erase(0,3);
+    }      
+  }
+
   sort(node->vals.begin(),node->vals.end(),sortstrcmp);
 
+  /* after sorting */
   for(vector<vector<string> >::iterator it = node->vals.begin(); it != node->vals.end(); it++) {
     /* DE fix */
     if(strncmp((*it)[0].c_str(),"DE",2)==0) {
@@ -87,6 +98,7 @@ void NTree::deep_sort(Node * node){
       (*it)[2] = articolo((*it)[2]);
     }
   }
+
 
   for (int i=0; i<27; i++) {
     Node * tgt = node->next[i];
@@ -160,9 +172,9 @@ int NTree::add(string code, string val) {
     return 0;
   }
 
-  // cerr << "adding: " <<  norm << " " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
-
   norm = normalize(entry[1]);
+
+  // cerr << "adding: " <<  norm << " - " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
   
   insert(root, norm, entry);
   
