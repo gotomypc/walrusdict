@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
 	CustomListAdapter adapter;
 	public static final String PROT = "http";
 	public static final String HOST = "192.168.1.201";
-	public static final String PORT = "3000";
+	public static final String PORT = "8331";
 	protected ArrayList<String[]> data;
 	protected String[][] dataOrig;
 
@@ -47,8 +47,10 @@ public class MainActivity extends Activity {
 		new AnkiCommand().execute("sync");
 		this.input = (EditText) findViewById(R.id.input);
 		input.addTextChangedListener(new TextWatcher() {
-			public void afterTextChanged(Editable s) {
-				new DownloadData().execute(input.getText().toString());
+			public void afterTextChanged(Editable ed) {
+				String s = input.getText().toString();
+				if(s.length() > 2)
+					new DownloadData().execute(s);
 				Log.d("onTextChanged", input.getText().toString());
 			}
 
@@ -167,7 +169,7 @@ public class MainActivity extends Activity {
 				conn.connect();
 				InputStream is = conn.getInputStream();
 				BufferedReader rd = new BufferedReader(
-						new InputStreamReader(is), 4096);
+						new InputStreamReader(is), 24000);
 				String line;
 				StringBuilder sb = new StringBuilder();
 				while ((line = rd.readLine()) != null) {

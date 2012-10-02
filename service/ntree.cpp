@@ -14,13 +14,56 @@ void NTree::full_sort() {
   deep_sort(root);
 }
 
+string normalize(string val) {
+  char from[] = { 0xe8, 0xf2, 0xf9, 0xe0, 0xcc,  /* lowercase accents */
+		  0xf6, 0xfc, 0xe4, /* lowercase umlaute */
+		  0xc1, 0xc2, 0xc8, 0xc9, 0xcc, 0xcd, 0xd2, 0xd3, 0xd9, 0xda, /* uppercase accents*/
+		  0xd6, 0xdc, 0xc4, /* uppercase umlaute */
+		  0 };
+  char to[] = 
+    "eouai"
+    "oua"
+    "AAEEIIOOUU"
+    "OUA";
+  int erase_start=-1, erase_end=-1;
+
+  for(int i=0;i<val.size();i++) {        
+    if(val[i] == '{')
+      erase_start=i;
+
+    if(val[i] == '}')
+      erase_end=i;
+
+    for(int k=0;from[k] != 0;k++) {
+      if (val[i] == from[k])
+	val[i] = to[k];
+    }
+  }
+
+  if (erase_start >= 0 && erase_end >= 0) {
+    val.erase(erase_start, 1 + erase_end-erase_start); 
+  }
+
+  transform(val.begin(), val.end(), val.begin(), ::tolower);
+
+  if (!strcmp("to ",val.c_str()))
+    val.erase(0, 3); 
+
+  return val;
+}
+
+
 bool charcmp(char a, char b) {
   return tolower(a) < tolower(b);
 }
  
 bool sortstrcmp(vector<string> a, vector <string> b)
 {
-  return lexicographical_compare(a[1].begin(),a[1].end(),b[1].begin(),b[1].end(), charcmp);
+  string one = normalize(a[1]), two = normalize(b[1]);
+  if (one.length() == two.length()) 
+    return lexicographical_compare(one.begin(),one.end(),two.begin(),two.end(), charcmp);
+  else 
+    return one.length() < two.length();
 }
 
 void NTree::deep_sort(Node * node){
@@ -28,6 +71,23 @@ void NTree::deep_sort(Node * node){
   // cerr << node->key << endl;
   
   sort(node->vals.begin(),node->vals.end(),sortstrcmp);
+
+  for(vector<vector<string> >::iterator it = node->vals.begin(); it != node->vals.end(); it++) {
+    /* DE fix */
+    if(strncmp((*it)[0].c_str(),"DE",2)==0) {
+      (*it)[1] = artikel((*it)[1]);
+    } else if (strncmp((*it)[0].c_str()+ 3,"DE",2)==0) {
+      (*it)[2] = artikel((*it)[2]);
+    }
+    
+    /* IT fix */  
+    if(strncmp((*it)[0].c_str(),"IT",2)==0) {
+      (*it)[1] = articolo((*it)[1]);
+    } else if (strncmp((*it)[0].c_str()+ 3,"IT",2)==0) {
+      (*it)[2] = articolo((*it)[2]);
+    }
+  }
+
   for (int i=0; i<27; i++) {
     Node * tgt = node->next[i];
     if (tgt != NULL)
@@ -100,22 +160,7 @@ int NTree::add(string code, string val) {
     return 0;
   }
 
-  /* DE fix */
-  if(strncmp(entry[0].c_str(),"DE",2)==0) {
-    entry[1] = artikel(entry[1]);
-  } else if (strncmp(entry[0].c_str()+ 3,"DE",2)==0) {
-    entry[2] = artikel(entry[2]);
-  }
-
-  /* IT fix */  
-  if(strncmp(entry[0].c_str(),"IT",2)==0) {
-    entry[1] = articolo(entry[1]);
-  } else if (strncmp(entry[0].c_str()+ 3,"IT",2)==0) {
-    entry[2] = articolo(entry[2]);
-  }
-
-
-  // cerr << "adding: " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
+  // cerr << "adding: " <<  norm << " " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
 
   norm = normalize(entry[1]);
   
@@ -173,44 +218,8 @@ string NTree::artikel(string val) {
   }
   
   if (del > 0 && erase_start >= 0 && erase_end >= 0) {
-    val.erase(4 + erase_start, 4 + 2 + erase_end-erase_start); 
+    val.erase(4 + erase_start, 4 + 1 + erase_end-erase_start); 
   }
-
-  return val;
-}
-
-string NTree::normalize(string val) {
-  char from[] = { 0xe8, 0xf2, 0xf9, 0xe0, 0xcc,  /* lowercase accents */
-		  0xf6, 0xfc, 0xe4, /* lowercase umlaute */
-		  0xc1, 0xc2, 0xc8, 0xc9, 0xcc, 0xcd, 0xd2, 0xd3, 0xd9, 0xda, /* uppercase accents*/
-		  0xd6, 0xdc, 0xc4, /* uppercase umlaute */
-		  0 };
-  char to[] = 
-    "eouai"
-    "oua"
-    "AAEEIIOOUU"
-    "OUA";
-  int erase_start=-1, erase_end=-1;
-
-  for(int i=0;i<val.size();i++) {        
-    if(val[i] == '{')
-      erase_start=i;
-
-    if(val[i] == '}')
-      erase_end=i;
-
-    for(int k=0;from[k] != 0;k++) {
-      if (val[i] == from[k])
-	val[i] = to[k];
-    }
-  }
-
-  if (erase_start >= 0 && erase_end >= 0) {
-    val.erase(erase_start, 2 + erase_end-erase_start); 
-  }
-
-  transform(val.begin(), val.end(), val.begin(), ::tolower);
-
 
   return val;
 }

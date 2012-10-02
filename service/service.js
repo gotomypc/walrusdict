@@ -17,15 +17,18 @@ var libntree = ffi.Library('./libntree', {
 });
 
 var dbPtr = libntree._Z4initv()
-var resPtr = ref.allocCString((new Buffer(8192).toString()));
+var resPtr = ref.allocCString((new Buffer(24000).toString()));
 
 /* with those 6 dicts and depth == 8 expect 1GB ram usage*/
-libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-EN","dicts/IT-EN-8859.txt");
+libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt");
 libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt");
+/*
+libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-EN","dicts/IT-EN-8859.txt");
 libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-IT","dicts/EN-IT-8859.txt");
 libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-DE","dicts/EN-DE-8859.txt");
 libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-EN","dicts/DE-EN-8859.txt");
-libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt");
+*/
+
 libntree._Z9full_sortP5NTree(dbPtr);
 
 var sanitize = function(s) {
@@ -37,7 +40,7 @@ query = function(req, res) {
     res.writeHead(200, { 'Content-Type': 'text/json'});
 
     var val = req.params.query.val;
-    if (!val || val.length < 4) {
+    if (!val) {
 	res.end("[]");
 	return;
     }

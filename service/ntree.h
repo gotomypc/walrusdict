@@ -8,8 +8,8 @@
 using namespace std;
 
 #define MAX_DEPTH 8
-#define RESULTS_MINDEPTH 4
-#define RESULTS_LIMIT 20
+#define RESULTS_MINDEPTH 3
+#define RESULTS_LIMIT 40
 
 
 class Node {
@@ -34,10 +34,10 @@ public:
 private:
   Node * root;
   int insert(Node * node, string key, vector<string> data);
-  string normalize(string val);
+  //  string normalize(string val);
   string artikel(string val);
   string articolo(string val);
   int key_index(string s);
   void deep_sort(Node * node);
-  
+  // bool sortstrcmp(vector<string> a, vector <string> b);
 };
