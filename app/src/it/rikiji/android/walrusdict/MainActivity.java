@@ -35,8 +35,8 @@ public class MainActivity extends Activity {
 	EditText input;
 	CustomListAdapter adapter;
 	public static final String PROT = "http";
-	public static final String HOST = "192.168.1.201";
-	public static final String PORT = "8331";
+	public static final String HOST = "127.0.0.1";
+	public static final String PORT = "3000";
 	protected ArrayList<String[]> data;
 	protected String[][] dataOrig;
 
@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 			public void afterTextChanged(Editable ed) {
 				String s = input.getText().toString();
 				if (s.length() > 2)
-					new DownloadData().execute(s);
+					new DownloadData().execute(prenormalize(s));
 				Log.d("onTextChanged", input.getText().toString());
 			}
 
@@ -81,6 +81,15 @@ public class MainActivity extends Activity {
 				return true;
 			}
 		});
+	}
+
+	private String prenormalize(String s) {
+		String from = "àÀèÈìÌòÒùÙäÄöÖüÜ";
+		String to =   "aAeEiIoOuUaAoOuU";
+		for (int i=0;i<from.length();i++) {
+			s = s.replace(from.charAt(i),to.charAt(i));
+		}
+		return s;
 	}
 
 	private String[] generate_card(String[] entry) {

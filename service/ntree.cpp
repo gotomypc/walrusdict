@@ -123,7 +123,7 @@ vector<vector<string> > NTree::search(string val) {
   
   string key = normalize(val);
 
-  while (key.size() > 0 && depth < MAX_DEPTH) {
+  while (key.size() > 1 && depth < MAX_DEPTH) {
     int index = key_index(key);
     
     if(node->next[index] != NULL)
@@ -140,7 +140,7 @@ vector<vector<string> > NTree::search(string val) {
 int NTree::insert(Node * node, string key, vector<string> data) {
   int index = key_index(key);
 
-  if(node->depth >= RESULTS_MINDEPTH)
+  if(node->depth >= RESULTS_MINDEPTH && key.length() < 4)
     node->vals.push_back(data);
 
   string sub = key.substr(1);

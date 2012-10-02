@@ -8,7 +8,7 @@
 using namespace std;
 
 #define MAX_DEPTH 8
-#define RESULTS_MINDEPTH 3
+#define RESULTS_MINDEPTH 2
 #define RESULTS_LIMIT 40
 
 
