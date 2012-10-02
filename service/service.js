@@ -12,19 +12,21 @@ var stringPtr = ref.refType(ref.types.CString);
 var libntree = ffi.Library('./libntree', {
     '_Z4initv': [ dataPtr, [] ],
     '_Z4loadP5NTreePcS1_': [ 'void', [ dataPtr, 'string', 'string' ] ],
-    '_Z5queryP5NTreePcS1_': [ 'void', [dataPtr, 'string', stringPtr ] ]
+    '_Z5queryP5NTreePcS1_': [ 'void', [dataPtr, 'string', stringPtr ] ],
+    '_Z9full_sortP5NTree': [ 'void', [dataPtr] ]
 });
 
 var dbPtr = libntree._Z4initv()
 var resPtr = ref.allocCString((new Buffer(8192).toString()));
 
 /* with those 6 dicts and depth == 8 expect 1GB ram usage*/
-libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-EN","dicts/IT-EN-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-IT","dicts/EN-IT-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-DE","dicts/EN-DE-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-EN","dicts/DE-EN-8859.txt")
-libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt")
+libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-EN","dicts/IT-EN-8859.txt");
+libntree._Z4loadP5NTreePcS1_(dbPtr, "IT-DE","dicts/IT-DE-8859.txt");
+libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-IT","dicts/EN-IT-8859.txt");
+libntree._Z4loadP5NTreePcS1_(dbPtr, "EN-DE","dicts/EN-DE-8859.txt");
+libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-EN","dicts/DE-EN-8859.txt");
+libntree._Z4loadP5NTreePcS1_(dbPtr, "DE-IT","dicts/DE-IT-8859.txt");
+libntree._Z9full_sortP5NTree(dbPtr);
 
 var sanitize = function(s) {
     return String(s).replace(/(["!'$`\\])/g,'');
@@ -106,7 +108,6 @@ var actions = {
 
 var port = process.argv[2] || "3000";
 console.log("all dicts loaded. starting service on port " + port + ".");
-
 
 http.createServer(function(req,res) {
     req.params = url.parse(req.url, true);

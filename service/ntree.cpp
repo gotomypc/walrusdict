@@ -1,46 +1,9 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <cstring>
-#include <algorithm>
-
-#define MAX_DEPTH 8
+#include "ntree.h"
 
 /* The ntree is requesting all the necessary memory right at startup,
    hence no calls to free. */
 
 using namespace std;
-
-class Node {
-
-public: 
-  int depth;
-  string key;
-  Node(int d) : next(), depth(d) {}
-  Node * next[27];
-  vector<vector<string> > vals;
-};
-
-
-class NTree {
-public:
-  NTree();
-  int add(string code, string val);
-  int clear();
-  vector<vector<string> > search(string val);
-  void full_sort();
-
-private:
-  Node * root;
-  int insert(Node * node, string key, vector<string> data);
-  string normalize(string val);
-  string artikel(string val);
-  string articolo(string val);
-  int key_index(string s);
-  void deep_sort(Node * node);
-  
-};
 
 NTree::NTree() {
   root = new Node(0);
@@ -104,10 +67,12 @@ vector<vector<string> > NTree::search(string val) {
 
 int NTree::insert(Node * node, string key, vector<string> data) {
   int index = key_index(key);
-  node->vals.push_back(data);
+
+  if(node->depth >= RESULTS_MINDEPTH)
+    node->vals.push_back(data);
 
   string sub = key.substr(1);
-  if (node->depth < MAX_DEPTH and sub.size() > 0) {
+  if (node->depth < MAX_DEPTH && sub.size() > 0) {
     if (node->next[index] == NULL) {
       node->next[index] = new Node(node->depth + 1);
       node->next[index]->key = node->key + sub[0];
@@ -150,7 +115,7 @@ int NTree::add(string code, string val) {
   }
 
 
-  cerr << "adding: " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
+  // cerr << "adding: " << entry[0] << " " << entry[1] << " - " << entry[2] << endl;
 
   norm = normalize(entry[1]);
   
@@ -248,50 +213,4 @@ string NTree::normalize(string val) {
 
 
   return val;
-}
-
-void query(NTree * data, char * query, char * result) {
-  cout << query;
-  vector<vector<string> > results = data->search(query);
-  string jout = "[";
-  /* break after 20 results. TODO: optimize tree memory usage accordingly */
-  int limit = 20;
-  for(vector<vector<string> >::iterator it = results.begin(); it != results.end(); it++) {
-    if(it != results.begin()) jout += ","; 
-    jout += "[";
-    for(vector<string>::iterator kt = (*it).begin(); kt != (*it).end(); kt++) {
-      if(kt != (*it).begin()) jout += ","; 
-      jout += '"' + (*kt) + '"';
-    }
-    jout += ']';
-    if (--limit <= 0)
-      break;
-  }
-  jout += "]";
-  /* iso-8859-1 to utf8 */
-  unsigned char *in = (unsigned char *) jout.c_str(), *out = (unsigned char *) result;
-  while (*in)
-    if (*in<128) *out++=*in++;
-    else *out++=0xc2+(*in>0xbf), *out++=(*in++&0x3f)+0x80;
-  *out = 0;
-}
-
-NTree * init() {
-  NTree * data = new NTree();
-  return data;
-}
-
-void load(NTree * data, char * code, char * file) {
-  ifstream input(file);
-    cerr << "loading: " << file << endl;
-    string line;
-    while (getline(input, line)) {
-      if (line[0] != '#') {
-	data->add(code, line);
-      }
-    }
-    input.close();
-    cerr << "sorting..." << endl;
-    data->full_sort();
-    cerr << "done!" << endl;
 }
